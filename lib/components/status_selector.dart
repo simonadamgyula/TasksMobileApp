@@ -59,14 +59,13 @@ class _StatusSelectorState extends State<StatusSelector> {
           bottomLeft: Radius.circular(14),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: DropdownButton<int>(
         underline: const SizedBox(),
         borderRadius: BorderRadius.circular(14),
+        padding: const EdgeInsets.symmetric(vertical: 0),
         style: TextStyle(
-          color: Theme.of(context).colorScheme.onPrimary,
-          fontWeight: FontWeight.bold
-        ),
+            color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.bold),
         iconEnabledColor: Theme.of(context).colorScheme.onPrimary,
         dropdownColor: Theme.of(context).colorScheme.primary,
         value: selected,
