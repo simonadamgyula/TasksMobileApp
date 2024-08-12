@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tasks/components/status_selector.dart';
-import 'package:tasks/components/task_comment.dart';
+import 'package:tasks/components/task_notes.dart';
 import 'package:tasks/components/time_edit.dart';
 
 class TaskPreview extends StatefulWidget {
@@ -13,45 +14,125 @@ class TaskPreview extends StatefulWidget {
 class _TaskPreviewState extends State<TaskPreview> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
+  TimeOfDay deadline = TimeOfDay.now();
 
-  void showTaskBottomModal(BuildContext context, {String? task}) {
-    showModalBottomSheet(
+  void onDeadlineChanged(TimeOfDay newDeadline) {
+    setState(() {
+      deadline = newDeadline;
+    });
+  }
+
+  void showTaskBottomModal(BuildContext context, {String? task}) async {
+    await showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(25),
+          topRight: Radius.circular(25),
+        ),
+      ),
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const Text('Task details'),
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Task name',
-                    border: InputBorder.none,
+        return DraggableScrollableSheet(
+          expand: false,
+          snap: true,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              child: Container(
+                margin: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(25),
+                    topRight: Radius.circular(25),
                   ),
                 ),
-                TextField(
-                  controller: locationController,
-                  decoration: const InputDecoration(
-                    hintText: 'Task location',
-                    border: InputBorder.none,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                          labelText: 'Name',
+                          labelStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          )),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: TextField(
+                        controller: locationController,
+                        decoration: const InputDecoration(
+                            labelText: 'Location',
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TimeEdit(
+                            onDeadlineChanged: onDeadlineChanged,
+                            deadline: deadline,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: const InputDecoration(
+                              labelText: 'Head count',
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        elevation: 5,
+                      ),
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const TaskNotes(),
+                  ],
                 ),
-                const TimeEdit(),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Save'),
-                ),
-                const TaskComment(),
-              ],
-            ),
-          ),
+              ) as Widget,
+            );
+          },
         );
       },
     );
+    setState(() {
+      deadline = deadline;
+    });
   }
 
   @override
@@ -74,7 +155,7 @@ class _TaskPreviewState extends State<TaskPreview> {
         child: Row(
           children: [
             InkWell(
-              onTap: () {
+              onTap: () async {
                 showTaskBottomModal(context, task: nameController.text);
               },
               child: Container(
@@ -117,8 +198,48 @@ class _TaskPreviewState extends State<TaskPreview> {
                       ),
                     ],
                   ),
-                  LocationHeightRow(
-                    locationController: locationController,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(right: 8),
+                              child: Icon(
+                                Icons.location_on_outlined,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: locationController,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  height: 0.8,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText: 'Task location',
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  contentPadding: EdgeInsets.all(0),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TimeEdit(
+                        onDeadlineChanged: onDeadlineChanged,
+                        deadline: deadline,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -126,56 +247,6 @@ class _TaskPreviewState extends State<TaskPreview> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class LocationHeightRow extends StatelessWidget {
-  const LocationHeightRow({super.key, required this.locationController});
-
-  final TextEditingController locationController;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Row(
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: Icon(
-                  Icons.location_on_outlined,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: locationController,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    height: 0.8,
-                  ),
-                  decoration: const InputDecoration(
-                    hintText: 'Task location',
-                    hintStyle: TextStyle(
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.normal,
-                    ),
-                    contentPadding: EdgeInsets.all(0),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const TimeEdit(),
-      ],
     );
   }
 }

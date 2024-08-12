@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class TimeEdit extends StatefulWidget {
-  const TimeEdit({super.key});
+  const TimeEdit({super.key, this.deadline, required this.onDeadlineChanged});
+
+  final TimeOfDay? deadline;
+  final void Function(TimeOfDay) onDeadlineChanged;
 
   @override
   State<TimeEdit> createState() => _TimeEditState();
@@ -9,6 +12,16 @@ class TimeEdit extends StatefulWidget {
 
 class _TimeEditState extends State<TimeEdit> {
   TimeOfDay deadline = TimeOfDay.now();
+
+  @override
+  void initState() {
+    if (widget.deadline != null) {
+      setState(() {
+        deadline = widget.deadline!;
+      });
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +38,7 @@ class _TimeEditState extends State<TimeEdit> {
         if (newDeadline != null) {
           setState(() {
             deadline = newDeadline;
+            widget.onDeadlineChanged(deadline);
           });
         }
       },
