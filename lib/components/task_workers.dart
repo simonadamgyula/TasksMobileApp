@@ -16,16 +16,27 @@ class Workers extends StatefulWidget {
 
 class _WorkersState extends State<Workers> {
   List<String> workers = List.empty(growable: true);
+  bool isEditing = false;
+  late FocusNode inputFocusNode;
 
   @override
   void initState() {
     workers.addAll(widget.workers);
+
+    inputFocusNode = FocusNode();
     super.initState();
   }
 
-  void addWorker() {
+  void startEditing() {
     setState(() {
-      workers.add("New Worker");
+      isEditing = true;
+    });
+    inputFocusNode.requestFocus();
+  }
+
+  void addWorker(String worker) {
+    setState(() {
+      workers.add(worker);
     });
     widget.onEdit(workers);
   }
@@ -68,12 +79,90 @@ class _WorkersState extends State<Workers> {
                   removeWorker(worker);
                 },
               ),
-            AddWorkerButton(
-              onAdd: addWorker,
-            ),
+            isEditing
+                ? AddWorkerField(
+                    focusNode: inputFocusNode,
+                    addWorker: addWorker,
+                    onFocusLost: () {
+                      setState(() {
+                        isEditing = false;
+                      });
+                    },
+                  )
+                : AddWorkerButton(
+                    onAdd: startEditing,
+                  ),
           ],
         ),
       ],
+    );
+  }
+}
+
+class AddWorkerField extends StatefulWidget {
+  const AddWorkerField({
+    super.key,
+    required this.focusNode,
+    required this.addWorker,
+    required this.onFocusLost,
+  });
+
+  final FocusNode focusNode;
+  final void Function(String) addWorker;
+  final void Function() onFocusLost;
+
+  @override
+  State<AddWorkerField> createState() => _AddWorkerFieldState();
+}
+
+class _AddWorkerFieldState extends State<AddWorkerField> {
+  final TextEditingController controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      height: 31,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary,
+        borderRadius: const BorderRadius.all(
+          Radius.circular(6),
+        ),
+      ),
+      child: IntrinsicWidth(
+        child: Focus(
+          onFocusChange: (hasFocus) {
+            if (!hasFocus) {
+              controller.clear();
+            }
+          },
+          child: TextField(
+            cursorColor: Colors.white,
+            cursorWidth: 1,
+            cursorOpacityAnimates: true,
+            focusNode: widget.focusNode,
+            controller: controller,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 2),
+              border: InputBorder.none,
+              isDense: true,
+              hintText: "Worker",
+              hintStyle: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            onEditingComplete: () {
+              widget.addWorker(controller.text);
+              controller.clear();
+            },
+          ),
+        ),
+      ),
     );
   }
 }
@@ -96,7 +185,7 @@ class AddWorkerButton extends StatelessWidget {
         child: const Icon(
           Icons.add,
           color: Colors.white,
-          size: 21,
+          size: 16,
         ),
       ),
     );

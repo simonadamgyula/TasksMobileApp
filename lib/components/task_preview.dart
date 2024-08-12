@@ -266,6 +266,7 @@ class _TaskPreviewState extends State<TaskPreview> {
                         onSelected: (int newStatus) {
                           setState(() {
                             status = newStatus;
+                            widget.task.status = newStatus;
                           });
                         },
                       ),
