@@ -5,8 +5,12 @@ import 'package:tasks/components/task_notes.dart';
 import 'package:tasks/components/task_workers.dart';
 import 'package:tasks/components/time_edit.dart';
 
+import '../data/task.dart';
+
 class TaskPreview extends StatefulWidget {
-  const TaskPreview({super.key});
+  const TaskPreview({super.key, required this.task});
+
+  final Task task;
 
   @override
   State<TaskPreview> createState() => _TaskPreviewState();
@@ -17,7 +21,20 @@ class _TaskPreviewState extends State<TaskPreview> {
   final TextEditingController locationController = TextEditingController();
   final TextEditingController headCountController = TextEditingController();
   final TextEditingController detailsController = TextEditingController();
+  int status = 0;
   TimeOfDay deadline = TimeOfDay.now();
+
+  @override
+  void initState() {
+    nameController.text = widget.task.name;
+    locationController.text = widget.task.location;
+    headCountController.text = widget.task.headCount.toString();
+    detailsController.text = widget.task.description;
+    deadline = widget.task.deadline;
+    status = widget.task.status;
+
+    super.initState();
+  }
 
   void onDeadlineChanged(TimeOfDay newDeadline) {
     setState(() {
@@ -139,29 +156,13 @@ class _TaskPreviewState extends State<TaskPreview> {
                       const SizedBox(
                         height: 20,
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          elevation: 5,
-                        ),
-                        child: Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                      ),
+                      Workers(workers: widget.task.workers),
                       const SizedBox(
                         height: 20,
                       ),
-                      const Workers(workers: ["John Doe", "Jane Doe"]),
-                      const SizedBox(
-                        height: 20,
+                      TaskNotes(
+                        notes: widget.task.notes,
                       ),
-                      const TaskNotes(),
                     ],
                   ),
                 ) as Widget,
@@ -224,8 +225,13 @@ class _TaskPreviewState extends State<TaskPreview> {
                           ),
                         ),
                       ),
-                      const StatusSelector(
-                        selected: 0,
+                      StatusSelector(
+                        selected: status,
+                        onSelected: (int newStatus) {
+                          setState(() {
+                            status = newStatus;
+                          });
+                        },
                       ),
                     ],
                   ),

@@ -14,9 +14,14 @@ const List<Status> statuses = [
 ];
 
 class StatusSelector extends StatefulWidget {
-  const StatusSelector({super.key, required this.selected});
+  const StatusSelector({
+    super.key,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final int selected;
+  final void Function(int) onSelected;
 
   @override
   State<StatusSelector> createState() => _StatusSelectorState();
@@ -75,6 +80,7 @@ class _StatusSelectorState extends State<StatusSelector> {
           setState(() {
             selected = value;
           });
+          widget.onSelected(value);
         },
       ),
     );

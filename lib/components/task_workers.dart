@@ -32,22 +32,39 @@ class _WorkersState extends State<Workers> {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      direction: Axis.horizontal,
-      runAlignment: WrapAlignment.start,
-      alignment: WrapAlignment.start,
-      runSpacing: 5,
-      spacing: 5,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final worker in workers)
-          Worker(
-            name: worker,
-            onRemove: () {
-              removeWorker(worker);
-            },
+        const Text(
+          "Workers",
+          textAlign: TextAlign.start,
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
-        AddWorkerButton(
-          onAdd: addWorker,
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Wrap(
+          direction: Axis.horizontal,
+          runAlignment: WrapAlignment.start,
+          alignment: WrapAlignment.start,
+          runSpacing: 5,
+          spacing: 5,
+          children: [
+            for (final worker in workers)
+              Worker(
+                name: worker,
+                onRemove: () {
+                  removeWorker(worker);
+                },
+              ),
+            AddWorkerButton(
+              onAdd: addWorker,
+            ),
+          ],
         ),
       ],
     );
@@ -103,10 +120,7 @@ class Worker extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.bold
-            ),
+                color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8),
