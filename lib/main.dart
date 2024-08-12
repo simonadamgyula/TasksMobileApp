@@ -1,44 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tasks/components/task_preview.dart';
+import 'package:tasks/data/database.dart';
 
 import 'data/task.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+
+  await Supabase.initialize(
+    url: "https://cdyinfjpithxtbnfstkp.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkeWluZmpwaXRoeHRibmZzdGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY0MDgyMTAsImV4cCI6MjAzMTk4NDIxMH0.ATYXkyzjvATULrBsPnP7_I4xugx2vt3jyCdLvP5-IeQ",
+  );
   runApp(const MyApp());
 }
-
-final List<Task> tasks = [
-  Task(
-    name: "Task 1",
-    location: "Location 1",
-    description: "Description 1",
-    status: 0,
-    deadline: const TimeOfDay(hour: 12, minute: 0),
-    headCount: 1,
-    workers: ["Worker 1"],
-    notes: ["Note 1"],
-  ),
-  Task(
-    name: "Task 2",
-    location: "Location 2",
-    description: "Description 2",
-    status: 1,
-    deadline: const TimeOfDay(hour: 12, minute: 0),
-    headCount: 1,
-    workers: ["Worker 1", "Worker 2"],
-    notes: ["Note 1", "Note 2"],
-  ),
-  Task(
-    name: "Task 3",
-    location: "Location 3",
-    description: "Description 3",
-    status: 2,
-    deadline: const TimeOfDay(hour: 12, minute: 0),
-    headCount: 1,
-    workers: ["Worker 1", "Worker 2", "Worker 3"],
-    notes: ["Note 1", "Note 2", "Note 3"],
-  ),
-];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -49,34 +26,52 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff0c6efb), brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xff0c6efb), brightness: Brightness.light),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final futureTasks = TasksDatabase.getTasks();
+
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Theme.of(context).colorScheme.surfaceDim,
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final task in tasks)
-                TaskPreview(task: task),
-            ],
-          )
+        child: FutureBuilder<List<Task>?>(
+          future: futureTasks,
+          builder: (context, AsyncSnapshot<List<Task>?> snapshot) {
+            if (snapshot.hasError) {
+              throw snapshot.error!;
+            }
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              );
+            }
+
+            final tasks = snapshot.data!;
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final task in tasks) TaskPreview(task: task),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
-

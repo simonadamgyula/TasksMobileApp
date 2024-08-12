@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
 class Workers extends StatefulWidget {
-  const Workers({super.key, required this.workers});
+  const Workers({
+    super.key,
+    required this.workers,
+    required this.onEdit,
+  });
 
   final List<String> workers;
+  final void Function(List<String>) onEdit;
 
   @override
   State<Workers> createState() => _WorkersState();
@@ -22,12 +27,14 @@ class _WorkersState extends State<Workers> {
     setState(() {
       workers.add("New Worker");
     });
+    widget.onEdit(workers);
   }
 
   void removeWorker(String worker) {
     setState(() {
       workers.remove(worker);
     });
+    widget.onEdit(workers);
   }
 
   @override

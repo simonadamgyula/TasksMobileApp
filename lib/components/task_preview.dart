@@ -4,6 +4,7 @@ import 'package:tasks/components/status_selector.dart';
 import 'package:tasks/components/task_notes.dart';
 import 'package:tasks/components/task_workers.dart';
 import 'package:tasks/components/time_edit.dart';
+import 'package:tasks/data/database.dart';
 
 import '../data/task.dart';
 
@@ -20,7 +21,7 @@ class _TaskPreviewState extends State<TaskPreview> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final TextEditingController headCountController = TextEditingController();
-  final TextEditingController detailsController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
   int status = 0;
   TimeOfDay deadline = TimeOfDay.now();
 
@@ -29,7 +30,7 @@ class _TaskPreviewState extends State<TaskPreview> {
     nameController.text = widget.task.name;
     locationController.text = widget.task.location;
     headCountController.text = widget.task.headCount.toString();
-    detailsController.text = widget.task.description;
+    descriptionController.text = widget.task.description;
     deadline = widget.task.deadline;
     status = widget.task.status;
 
@@ -42,7 +43,11 @@ class _TaskPreviewState extends State<TaskPreview> {
     });
   }
 
-  void showTaskBottomModal(BuildContext context, {String? task}) async {
+  void onEdit() {
+    TasksDatabase.updateTask(widget.task);
+  }
+
+  void showTaskBottomModal(BuildContext context) async {
     await showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -62,6 +67,9 @@ class _TaskPreviewState extends State<TaskPreview> {
             return SingleChildScrollView(
               controller: scrollController,
               child: Container(
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
                 padding: const EdgeInsets.only(top: 20),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
@@ -85,32 +93,43 @@ class _TaskPreviewState extends State<TaskPreview> {
                       TextField(
                         controller: nameController,
                         decoration: const InputDecoration(
-                            labelText: 'Name',
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
+                          labelText: 'Name',
+                          labelStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onChanged: (String value) {
+                          widget.task.name = value;
+                        },
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: TextField(
                           controller: locationController,
                           decoration: const InputDecoration(
-                              labelText: 'Location',
-                              labelStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              )),
+                            labelText: 'Location',
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          onChanged: (String value) {
+                            widget.task.location = value;
+                          },
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: TextField(
-                          controller: detailsController,
+                          controller: descriptionController,
                           decoration: const InputDecoration(
-                            labelText: 'Details',
+                            labelText: 'Description',
                             labelStyle: TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          onChanged: (String value) {
+                            widget.task.description = value;
+                          },
                           maxLines: null,
                         ),
                       ),
@@ -127,7 +146,10 @@ class _TaskPreviewState extends State<TaskPreview> {
                                   ),
                                 ),
                                 TimeEdit(
-                                  onDeadlineChanged: onDeadlineChanged,
+                                  onDeadlineChanged: (TimeOfDay deadline) {
+                                    onDeadlineChanged(deadline);
+                                    widget.task.deadline = deadline;
+                                  },
                                   deadline: deadline,
                                 ),
                               ],
@@ -149,6 +171,9 @@ class _TaskPreviewState extends State<TaskPreview> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                              onChanged: (String value) {
+                                widget.task.headCount = int.tryParse(value);
+                              },
                             ),
                           ),
                         ],
@@ -156,12 +181,20 @@ class _TaskPreviewState extends State<TaskPreview> {
                       const SizedBox(
                         height: 20,
                       ),
-                      Workers(workers: widget.task.workers),
+                      Workers(
+                        workers: widget.task.workers ?? [],
+                        onEdit: (List<String> workers) {
+                          widget.task.workers = workers;
+                        },
+                      ),
                       const SizedBox(
                         height: 20,
                       ),
                       TaskNotes(
-                        notes: widget.task.notes,
+                        notes: widget.task.notes ?? [],
+                        onEdit: (List<String> notes) {
+                          widget.task.notes = notes;
+                        },
                       ),
                     ],
                   ),
@@ -172,9 +205,9 @@ class _TaskPreviewState extends State<TaskPreview> {
         );
       },
     );
-    setState(() {
-      deadline = deadline;
-    });
+
+    setState(() {});
+    TasksDatabase.updateTask(widget.task);
   }
 
   @override
@@ -198,7 +231,7 @@ class _TaskPreviewState extends State<TaskPreview> {
           children: [
             InkWell(
               onTap: () async {
-                showTaskBottomModal(context, task: nameController.text);
+                showTaskBottomModal(context);
               },
               child: Container(
                 width: 50,
@@ -217,11 +250,14 @@ class _TaskPreviewState extends State<TaskPreview> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          nameController.text,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Text(
+                            nameController.text,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -250,12 +286,15 @@ class _TaskPreviewState extends State<TaskPreview> {
                               ),
                             ),
                             Expanded(
-                              child: Text(
-                                locationController.text,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                  height: 0.8,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text(
+                                  locationController.text,
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    height: 0.8,
+                                  ),
                                 ),
                               ),
                             ),

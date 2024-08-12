@@ -1,11 +1,14 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
 class TaskNotes extends StatefulWidget {
-  const TaskNotes({super.key, required this.notes});
+  const TaskNotes({
+    super.key,
+    required this.notes,
+    required this.onEdit,
+  });
 
   final List<String> notes;
+  final void Function(List<String>) onEdit;
 
   @override
   State<TaskNotes> createState() => _TaskNotesState();
@@ -16,13 +19,10 @@ class _TaskNotesState extends State<TaskNotes> {
     setState(() {
       widget.notes.add(note);
     });
+    widget.onEdit(widget.notes);
   }
 
   void onEditNote(int index, String newNote) {
-    log(widget.notes[index]);
-    log(index.toString());
-    log(newNote);
-
     setState(() {
       if (newNote.isEmpty) {
         widget.notes.removeAt(index);
@@ -30,6 +30,7 @@ class _TaskNotesState extends State<TaskNotes> {
       }
       widget.notes[index] = newNote;
     });
+    widget.onEdit(widget.notes);
   }
 
   @override
