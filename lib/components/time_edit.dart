@@ -25,9 +25,8 @@ class _TimeEditState extends State<TimeEdit> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      padding: const EdgeInsets.all(0),
-      onPressed: () async {
+    return InkWell(
+      onTap: () async {
         final TimeOfDay? newDeadline = await showTimePicker(
           context: context,
           initialTime: deadline,
@@ -42,17 +41,29 @@ class _TimeEditState extends State<TimeEdit> {
           });
         }
       },
-      child: Row(
-        children: [
-          Text(deadline.format(context)),
-          const Padding(
-            padding: EdgeInsets.only(left: 8),
-            child: Icon(
-              Icons.access_time,
-              color: Colors.black,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              deadline.format(context),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          )
-        ],
+            const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Icon(
+                Icons.access_time,
+                color: Colors.black,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
