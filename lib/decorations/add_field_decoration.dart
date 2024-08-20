@@ -17,5 +17,10 @@ InputDecoration getFormFieldDecoration(String labelText) {
         color: Colors.white,
       ),
     ),
+    focusedBorder: const UnderlineInputBorder(
+      borderSide: BorderSide(
+        color: Colors.white,
+      ),
+    ),
   );
 }

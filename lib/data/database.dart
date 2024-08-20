@@ -18,11 +18,11 @@ class TasksDatabase {
   }
 
   static Future<void> addTask(Task task) async {
-    await supabase.from('Tasks').upsert(task.toJson(), onConflict: 'replace');
+    await supabase.from('Tasks').upsert(task.toJson());
   }
 
   static Future<void> updateTask(Task task) async {
-    await supabase.from('Tasks').update(task.toJson()).eq('id', task.id);
+    await supabase.from('Tasks').update(task.toJson()).eq('id', task.id!);
   }
 
   static Future<void> deleteTask(int id) async {

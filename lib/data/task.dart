@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 class Task {
-  int id;
+  int? id;
   String name;
   String location;
   String description;
@@ -27,7 +27,6 @@ class Task {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'name': name,
       'location': location,
       'description': description,

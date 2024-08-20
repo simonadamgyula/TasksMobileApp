@@ -8,6 +8,22 @@ import 'package:tasks/data/database.dart';
 
 import '../data/task.dart';
 
+extension TimeOfDayExtension on TimeOfDay {
+  TimeOfDay addHour(int hour) {
+    return replacing(hour: (this.hour + hour) % 24, minute: minute);
+  }
+
+  TimeOfDay removeHour(int hour) {
+    return replacing(hour: (this.hour - hour) % 24, minute: minute);
+  }
+}
+
+bool isBefore(TimeOfDay a, TimeOfDay b) {
+  a = a.removeHour(10);
+  b = b.removeHour(10);
+  return a.hour < b.hour || (a.hour == b.hour && a.minute < b.minute);
+}
+
 class TaskPreview extends StatefulWidget {
   const TaskPreview({super.key, required this.task});
 
@@ -212,6 +228,8 @@ class _TaskPreviewState extends State<TaskPreview> {
 
   @override
   Widget build(BuildContext context) {
+    bool urgent = isBefore(deadline.removeHour(1), TimeOfDay.now());
+
     return IntrinsicHeight(
       child: Container(
         height: double.infinity,
@@ -250,14 +268,12 @@ class _TaskPreviewState extends State<TaskPreview> {
                   Row(
                     children: [
                       Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Text(
-                            nameController.text,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        child: Text(
+                          overflow: TextOverflow.ellipsis,
+                          nameController.text,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -308,16 +324,16 @@ class _TaskPreviewState extends State<TaskPreview> {
                           children: [
                             Text(
                               deadline.format(context),
-                              style: const TextStyle(
-                                color: Colors.black,
+                              style: TextStyle(
+                                color: urgent ? Colors.red : Colors.black,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
                               child: Icon(
                                 Icons.access_time,
-                                color: Colors.black,
+                                color: urgent ? Colors.red : Colors.black,
                               ),
                             )
                           ],
