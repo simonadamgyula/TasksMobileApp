@@ -2,15 +2,13 @@
 
 Tasks
 
-## Getting Started
+## Setup
 
-This project is a starting point for a Flutter application.
+1. Create your supabase instance.
+2. Use ```db.sql``` file to set up your database.
+3. Put your supabase instance url (```URL```) and anon key (```ANON```) in a ```.env``` file.
 
-A few resources to get you started if this is your first Flutter project:
+## Install
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Use ```flutter build apk``` to build the android apk file.
+2. Install the app to a connected device with ```flutter install```.
